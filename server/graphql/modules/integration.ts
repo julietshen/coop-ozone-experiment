@@ -5,7 +5,6 @@ import {
 } from '../../services/signalAuthService/index.js';
 import { Integration } from '../../services/signalsService/index.js';
 import { isCoopErrorOfType } from '../../utils/errors.js';
-import { assertUnreachable } from '../../utils/misc.js';
 import {
   makeIntegrationConfigUnsupportedIntegrationError,
   type TIntegrationCredential,
@@ -16,10 +15,12 @@ import {
 } from '../generated.js';
 import { type ResolverMap } from '../resolvers.js';
 import { gqlErrorResult, gqlSuccessResult } from '../utils/gqlResult.js';
+import { assertUnreachable } from '../../utils/misc.js';
 
 const typeDefs = /* GraphQL */ `
   enum Integration {
     AKISMET
+    GOOGLE_CONTENT_SAFETY_API
     L1GHT
     MICROSOFT_AZURE_CONTENT_MODERATOR
     OOPSPAM
@@ -27,6 +28,10 @@ const typeDefs = /* GraphQL */ `
     OZONE
     SIGHT_ENGINE
     TWO_HAT
+  }
+
+  type GoogleContentSafetyApiIntegrationApiCredential {
+    apiKey: String!
   }
 
   type OpenAiIntegrationApiCredential {
@@ -40,12 +45,17 @@ const typeDefs = /* GraphQL */ `
   }
 
   union IntegrationApiCredential =
-      OpenAiIntegrationApiCredential
+      GoogleContentSafetyApiIntegrationApiCredential
+    | OpenAiIntegrationApiCredential
     | OzoneIntegrationApiCredential
 
   type IntegrationConfig {
     name: Integration!
     apiCredential: IntegrationApiCredential!
+  }
+
+  input GoogleContentSafetyApiIntegrationApiCredentialInput {
+    apiKey: String!
   }
 
   input OzoneIntegrationApiCredentialInput {
@@ -60,6 +70,7 @@ const typeDefs = /* GraphQL */ `
   }
 
   input IntegrationApiCredentialInput {
+    googleContentSafetyApi: GoogleContentSafetyApiIntegrationApiCredentialInput
     openAi: OpenAiIntegrationApiCredentialInput
     ozone: OzoneIntegrationApiCredentialInput
   }
@@ -135,13 +146,16 @@ const typeDefs = /* GraphQL */ `
 
 const IntegrationApiCredential: ResolverMap<TIntegrationCredential> = {
   __resolveType(it) {
-    switch (it.name) {
+    const integrationName = it.name;
+    switch (integrationName) {
+      case Integration.GOOGLE_CONTENT_SAFETY_API:
+        return 'GoogleContentSafetyApiIntegrationApiCredential';
       case Integration.OPEN_AI:
         return 'OpenAiIntegrationApiCredential';
       case Integration.OZONE:
         return 'OzoneIntegrationApiCredential';
       default:
-        assertUnreachable(it as never);
+        assertUnreachable(integrationName, `Unsupported integration: ${integrationName}`);
     }
   },
 };
