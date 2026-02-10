@@ -1239,16 +1239,20 @@ export const GQLIntegration = {
   MicrosoftAzureContentModerator: 'MICROSOFT_AZURE_CONTENT_MODERATOR',
   Oopspam: 'OOPSPAM',
   OpenAi: 'OPEN_AI',
+  Ozone: 'OZONE',
   SightEngine: 'SIGHT_ENGINE',
   TwoHat: 'TWO_HAT',
 } as const;
 
 export type GQLIntegration =
   (typeof GQLIntegration)[keyof typeof GQLIntegration];
-export type GQLIntegrationApiCredential = GQLOpenAiIntegrationApiCredential;
+export type GQLIntegrationApiCredential =
+  | GQLOpenAiIntegrationApiCredential
+  | GQLOzoneIntegrationApiCredential;
 
 export type GQLIntegrationApiCredentialInput = {
   readonly openAi?: InputMaybe<GQLOpenAiIntegrationApiCredentialInput>;
+  readonly ozone?: InputMaybe<GQLOzoneIntegrationApiCredentialInput>;
 };
 
 export type GQLIntegrationConfig = {
@@ -2849,6 +2853,20 @@ export type GQLOrgWithNameExistsError = GQLError & {
   readonly status: Scalars['Int'];
   readonly title: Scalars['String'];
   readonly type: ReadonlyArray<Scalars['String']>;
+};
+
+export type GQLOzoneIntegrationApiCredential = {
+  readonly __typename: 'OzoneIntegrationApiCredential';
+  readonly did: Scalars['String'];
+  readonly handle?: Maybe<Scalars['String']>;
+  readonly serviceUrl: Scalars['String'];
+};
+
+export type GQLOzoneIntegrationApiCredentialInput = {
+  readonly did: Scalars['String'];
+  readonly handle?: InputMaybe<Scalars['String']>;
+  readonly serviceUrl: Scalars['String'];
+  readonly signingKey: Scalars['String'];
 };
 
 /** Information about the current page in a connection. */
@@ -5557,10 +5575,17 @@ export type GQLIntegrationConfigQuery = {
         readonly config?: {
           readonly __typename: 'IntegrationConfig';
           readonly name: GQLIntegration;
-          readonly apiCredential: {
-            readonly __typename: 'OpenAiIntegrationApiCredential';
-            readonly apiKey: string;
-          };
+          readonly apiCredential:
+            | {
+                readonly __typename: 'OpenAiIntegrationApiCredential';
+                readonly apiKey: string;
+              }
+            | {
+                readonly __typename: 'OzoneIntegrationApiCredential';
+                readonly did: string;
+                readonly handle?: string | null;
+                readonly serviceUrl: string;
+              };
         } | null;
       }
     | {
@@ -27167,6 +27192,11 @@ export const GQLIntegrationConfigDocument = gql`
           apiCredential {
             ... on OpenAiIntegrationApiCredential {
               apiKey
+            }
+            ... on OzoneIntegrationApiCredential {
+              did
+              handle
+              serviceUrl
             }
           }
         }

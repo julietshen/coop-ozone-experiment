@@ -41,6 +41,19 @@ class IntegrationAPI extends DataSource {
   ): Promise<TIntegrationConfig> {
     const { apiCredential } = params;
 
+    if (apiCredential.ozone) {
+      return this.__private__setConfig(
+        'OZONE',
+        {
+          serviceUrl: apiCredential.ozone.serviceUrl,
+          did: apiCredential.ozone.did,
+          signingKey: apiCredential.ozone.signingKey,
+          handle: apiCredential.ozone.handle ?? undefined,
+        },
+        orgId,
+      );
+    }
+
     if (!apiCredential.openAi) {
       throw new Error('OpenAI credentials are required');
     }

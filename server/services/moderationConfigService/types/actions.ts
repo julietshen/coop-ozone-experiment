@@ -11,6 +11,7 @@ export const ActionType = makeEnumLike([
   'ENQUEUE_TO_MRT',
   'ENQUEUE_TO_NCMEC',
   'ENQUEUE_AUTHOR_TO_MRT',
+  'EMIT_OZONE_EVENT',
 ]);
 
 export type ActionType = keyof typeof ActionType;
@@ -19,7 +20,8 @@ export type Action =
   | EnqueueToMrtAction
   | EnqueueToNcmecAction
   | CustomAction
-  | EnqueueAuthorToMrtAction;
+  | EnqueueAuthorToMrtAction
+  | EmitOzoneEventAction;
 
 type AnyAction = ReadonlyDeep<
   Simplify<
@@ -40,6 +42,12 @@ type AnyAction = ReadonlyDeep<
           callbackUrlBody: JsonObject | null;
           customMrtApiParams: JsonObject | null;
         };
+        EMIT_OZONE_EVENT: {
+          callbackUrl?: null;
+          ozoneEventType: 'label' | 'takedown' | 'comment' | 'acknowledge' | 'reverseTakedown' | 'escalate';
+          ozoneLabels: string[] | null;
+          ozoneComment: string | null;
+        };
       }
     >
   >
@@ -59,4 +67,8 @@ export type EnqueueAuthorToMrtAction = Simplify<
 
 export type CustomAction = Simplify<
   AnyAction & { readonly actionType: 'CUSTOM_ACTION' }
+>;
+
+export type EmitOzoneEventAction = Simplify<
+  AnyAction & { readonly actionType: 'EMIT_OZONE_EVENT' }
 >;

@@ -5,6 +5,7 @@ import { makeRefreshUserScoresCacheJob } from '../../services/userStatisticsServ
 import { type Job, type Worker } from '../../workers_jobs/index.js';
 import makeItemProcessingWorker from '../../workers_jobs/ItemProcessingWorker.js';
 import makeRefreshMRTDecisionsMaterializedViewJob from '../../workers_jobs/RefreshMRTDecisionsMaterializedViewJob.js';
+import makeOzoneEventPollingJob from '../../workers_jobs/OzoneEventPollingJob.js';
 import makeRetryFailedNcmecDecisionsJob from '../../workers_jobs/RetryFailedNcmecDecisionsJob.js';
 import makeRunUserRulesJob from '../../workers_jobs/RunUserRulesJob.js';
 import makeSnowflakeIngestionToS3Worker from '../../workers_jobs/SnowflakeIngestionToS3Worker.js';
@@ -29,6 +30,7 @@ declare module '../index.js' {
     IngestReportsIntoMRTJob: Job;
     RetryFailedNcmecDecisionsJob: Job;
     RefreshMRTDecisionsMaterializedViewJob: Job;
+    OzoneEventPollingJob: Job;
   }
 }
 
@@ -55,5 +57,10 @@ export function registerWorkersAndJobs(bottle: Bottle<Dependencies>) {
     bottle,
     'RetryFailedNcmecDecisionsJob',
     makeRetryFailedNcmecDecisionsJob,
+  );
+  register(
+    bottle,
+    'OzoneEventPollingJob',
+    makeOzoneEventPollingJob,
   );
 }

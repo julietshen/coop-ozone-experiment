@@ -6,6 +6,7 @@ import { makeEnumLike } from '@roostorg/types';
  */
 export const Integration = makeEnumLike([
   'OPEN_AI',
+  'OZONE',
 ]);
 
 export type Integration = keyof typeof Integration;

@@ -1308,16 +1308,20 @@ export const GQLIntegration = {
   MicrosoftAzureContentModerator: 'MICROSOFT_AZURE_CONTENT_MODERATOR',
   Oopspam: 'OOPSPAM',
   OpenAi: 'OPEN_AI',
+  Ozone: 'OZONE',
   SightEngine: 'SIGHT_ENGINE',
   TwoHat: 'TWO_HAT',
 } as const;
 
 export type GQLIntegration =
   (typeof GQLIntegration)[keyof typeof GQLIntegration];
-export type GQLIntegrationApiCredential = GQLOpenAiIntegrationApiCredential;
+export type GQLIntegrationApiCredential =
+  | GQLOpenAiIntegrationApiCredential
+  | GQLOzoneIntegrationApiCredential;
 
 export type GQLIntegrationApiCredentialInput = {
   readonly openAi?: InputMaybe<GQLOpenAiIntegrationApiCredentialInput>;
+  readonly ozone?: InputMaybe<GQLOzoneIntegrationApiCredentialInput>;
 };
 
 export type GQLIntegrationConfig = {
@@ -2918,6 +2922,20 @@ export type GQLOrgWithNameExistsError = GQLError & {
   readonly status: Scalars['Int'];
   readonly title: Scalars['String'];
   readonly type: ReadonlyArray<Scalars['String']>;
+};
+
+export type GQLOzoneIntegrationApiCredential = {
+  readonly __typename?: 'OzoneIntegrationApiCredential';
+  readonly did: Scalars['String'];
+  readonly handle?: Maybe<Scalars['String']>;
+  readonly serviceUrl: Scalars['String'];
+};
+
+export type GQLOzoneIntegrationApiCredentialInput = {
+  readonly did: Scalars['String'];
+  readonly handle?: InputMaybe<Scalars['String']>;
+  readonly serviceUrl: Scalars['String'];
+  readonly signingKey: Scalars['String'];
 };
 
 /** Information about the current page in a connection. */
@@ -5099,7 +5117,9 @@ export type GQLResolversTypes = {
   IgnoreDecisionComponent: ResolverTypeWrapper<GQLIgnoreDecisionComponent>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Integration: GQLIntegration;
-  IntegrationApiCredential: GQLResolversTypes['OpenAiIntegrationApiCredential'];
+  IntegrationApiCredential:
+    | GQLResolversTypes['OpenAiIntegrationApiCredential']
+    | GQLResolversTypes['OzoneIntegrationApiCredential'];
   IntegrationApiCredentialInput: GQLIntegrationApiCredentialInput;
   IntegrationConfig: ResolverTypeWrapper<
     Omit<GQLIntegrationConfig, 'apiCredential'> & {
@@ -5382,6 +5402,8 @@ export type GQLResolversTypes = {
   Org: ResolverTypeWrapper<Org>;
   OrgWithEmailExistsError: ResolverTypeWrapper<GQLOrgWithEmailExistsError>;
   OrgWithNameExistsError: ResolverTypeWrapper<GQLOrgWithNameExistsError>;
+  OzoneIntegrationApiCredential: ResolverTypeWrapper<GQLOzoneIntegrationApiCredential>;
+  OzoneIntegrationApiCredentialInput: GQLOzoneIntegrationApiCredentialInput;
   PageInfo: ResolverTypeWrapper<GQLPageInfo>;
   PartialItemsEndpointResponseError: ResolverTypeWrapper<GQLPartialItemsEndpointResponseError>;
   PartialItemsInvalidResponseError: ResolverTypeWrapper<GQLPartialItemsInvalidResponseError>;
@@ -5930,7 +5952,9 @@ export type GQLResolversParentTypes = {
   ID: Scalars['ID'];
   IgnoreDecisionComponent: GQLIgnoreDecisionComponent;
   Int: Scalars['Int'];
-  IntegrationApiCredential: GQLResolversParentTypes['OpenAiIntegrationApiCredential'];
+  IntegrationApiCredential:
+    | GQLResolversParentTypes['OpenAiIntegrationApiCredential']
+    | GQLResolversParentTypes['OzoneIntegrationApiCredential'];
   IntegrationApiCredentialInput: GQLIntegrationApiCredentialInput;
   IntegrationConfig: Omit<GQLIntegrationConfig, 'apiCredential'> & {
     apiCredential: GQLResolversParentTypes['IntegrationApiCredential'];
@@ -6163,6 +6187,8 @@ export type GQLResolversParentTypes = {
   Org: Org;
   OrgWithEmailExistsError: GQLOrgWithEmailExistsError;
   OrgWithNameExistsError: GQLOrgWithNameExistsError;
+  OzoneIntegrationApiCredential: GQLOzoneIntegrationApiCredential;
+  OzoneIntegrationApiCredentialInput: GQLOzoneIntegrationApiCredentialInput;
   PageInfo: GQLPageInfo;
   PartialItemsEndpointResponseError: GQLPartialItemsEndpointResponseError;
   PartialItemsInvalidResponseError: GQLPartialItemsInvalidResponseError;
@@ -8322,7 +8348,7 @@ export type GQLIntegrationApiCredentialResolvers<
     GQLResolversParentTypes['IntegrationApiCredential'] = GQLResolversParentTypes['IntegrationApiCredential'],
 > = {
   __resolveType: TypeResolveFn<
-    'OpenAiIntegrationApiCredential',
+    'OpenAiIntegrationApiCredential' | 'OzoneIntegrationApiCredential',
     ParentType,
     ContextType
   >;
@@ -10849,6 +10875,21 @@ export type GQLOrgWithNameExistsErrorResolvers<
     ParentType,
     ContextType
   >;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GQLOzoneIntegrationApiCredentialResolvers<
+  ContextType = Context,
+  ParentType extends
+    GQLResolversParentTypes['OzoneIntegrationApiCredential'] = GQLResolversParentTypes['OzoneIntegrationApiCredential'],
+> = {
+  did?: Resolver<GQLResolversTypes['String'], ParentType, ContextType>;
+  handle?: Resolver<
+    Maybe<GQLResolversTypes['String']>,
+    ParentType,
+    ContextType
+  >;
+  serviceUrl?: Resolver<GQLResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -13826,6 +13867,7 @@ export type GQLResolvers<ContextType = Context> = {
   Org?: GQLOrgResolvers<ContextType>;
   OrgWithEmailExistsError?: GQLOrgWithEmailExistsErrorResolvers<ContextType>;
   OrgWithNameExistsError?: GQLOrgWithNameExistsErrorResolvers<ContextType>;
+  OzoneIntegrationApiCredential?: GQLOzoneIntegrationApiCredentialResolvers<ContextType>;
   PageInfo?: GQLPageInfoResolvers<ContextType>;
   PartialItemsEndpointResponseError?: GQLPartialItemsEndpointResponseErrorResolvers<ContextType>;
   PartialItemsInvalidResponseError?: GQLPartialItemsInvalidResponseErrorResolvers<ContextType>;

@@ -24,6 +24,7 @@ const typeDefs = /* GraphQL */ `
     MICROSOFT_AZURE_CONTENT_MODERATOR
     OOPSPAM
     OPEN_AI
+    OZONE
     SIGHT_ENGINE
     TWO_HAT
   }
@@ -32,12 +33,26 @@ const typeDefs = /* GraphQL */ `
     apiKey: String!
   }
 
+  type OzoneIntegrationApiCredential {
+    serviceUrl: String!
+    did: String!
+    handle: String
+  }
+
   union IntegrationApiCredential =
       OpenAiIntegrationApiCredential
+    | OzoneIntegrationApiCredential
 
   type IntegrationConfig {
     name: Integration!
     apiCredential: IntegrationApiCredential!
+  }
+
+  input OzoneIntegrationApiCredentialInput {
+    serviceUrl: String!
+    did: String!
+    signingKey: String!
+    handle: String
   }
 
   input OpenAiIntegrationApiCredentialInput {
@@ -46,6 +61,7 @@ const typeDefs = /* GraphQL */ `
 
   input IntegrationApiCredentialInput {
     openAi: OpenAiIntegrationApiCredentialInput
+    ozone: OzoneIntegrationApiCredentialInput
   }
 
   input SetIntegrationConfigInput {
@@ -122,8 +138,10 @@ const IntegrationApiCredential: ResolverMap<TIntegrationCredential> = {
     switch (it.name) {
       case Integration.OPEN_AI:
         return 'OpenAiIntegrationApiCredential';
+      case Integration.OZONE:
+        return 'OzoneIntegrationApiCredential';
       default:
-        assertUnreachable(it.name);
+        assertUnreachable(it as never);
     }
   },
 };

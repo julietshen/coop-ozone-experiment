@@ -127,6 +127,7 @@ export default class ActionOperations {
           case 'ENQUEUE_TO_MRT':
           case 'ENQUEUE_TO_NCMEC':
           case 'ENQUEUE_AUTHOR_TO_MRT':
+          case 'EMIT_OZONE_EVENT':
             return { actionType: it.actionType };
           default:
             assertUnreachable(it);

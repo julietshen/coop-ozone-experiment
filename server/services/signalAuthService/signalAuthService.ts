@@ -23,6 +23,12 @@ export type Credentials<T extends ConfigurableIntegration> = {
 };
 
 export type OpenAICredential = { apiKey: string };
+export type OzoneCredential = {
+  serviceUrl: string;
+  did: string;
+  signingKey: string;
+  handle?: string;
+};
 export type ClarifaiApiCredential = { apiKey: NonEmptyString };
 export type ClarifaiModelType = 'IMAGE' | 'TEXT';
 export type ClarifaiPATCredential = {
@@ -36,6 +42,7 @@ export type ClarifaiPATCredential = {
 // integration name to credentials type.
 export type CredentialTypes = {
   [Integration.OPEN_AI]: OpenAICredential;
+  [Integration.OZONE]: OzoneCredential;
 };
 
 // Both our internal Integration enum and the external GQL enum include some
@@ -46,6 +53,7 @@ export type CredentialTypes = {
 // users can provide their own keys.
 export const configurableIntegrations = [
   Integration.OPEN_AI,
+  Integration.OZONE,
 ] as const;
 
 /**
@@ -142,6 +150,55 @@ function makeImplementations(
       delete: async (orgId: string) => {
         await pg
           .deleteFrom('signal_auth_service.open_ai_configs')
+          .where('org_id', '=', orgId)
+          .executeTakeFirst();
+      },
+    },
+
+    [Integration.OZONE]: {
+      get: async (orgId: string) => {
+        return pg
+          .selectFrom('signal_auth_service.ozone_configs')
+          .select([
+            'service_url as serviceUrl',
+            'did',
+            'signing_key as signingKey',
+            'handle',
+          ])
+          .where('org_id', '=', orgId)
+          .executeTakeFirst() as Promise<OzoneCredential | undefined>;
+      },
+      set: async (orgId: string, credential: OzoneCredential) => {
+        return pg
+          .insertInto('signal_auth_service.ozone_configs')
+          .values([
+            {
+              org_id: orgId,
+              service_url: credential.serviceUrl,
+              did: credential.did,
+              signing_key: credential.signingKey,
+              handle: credential.handle ?? null,
+            },
+          ])
+          .onConflict((oc) =>
+            oc.column('org_id').doUpdateSet({
+              service_url: credential.serviceUrl,
+              did: credential.did,
+              signing_key: credential.signingKey,
+              handle: credential.handle ?? null,
+            }),
+          )
+          .returning([
+            'service_url as serviceUrl',
+            'did',
+            'signing_key as signingKey',
+            'handle',
+          ])
+          .executeTakeFirstOrThrow() as Promise<OzoneCredential>;
+      },
+      delete: async (orgId: string) => {
+        await pg
+          .deleteFrom('signal_auth_service.ozone_configs')
           .where('org_id', '=', orgId)
           .executeTakeFirst();
       },

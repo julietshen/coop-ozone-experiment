@@ -17,6 +17,7 @@ import {
   useGQLPermissionGatedRouteLoggedInUserQuery,
   useGQLSetIntegrationConfigMutation,
   type GQLOpenAiIntegrationApiCredential,
+  type GQLOzoneIntegrationApiCredential,
 } from '../../../graphql/generated';
 import {
   stripTypename,
@@ -55,6 +56,11 @@ gql`
             ... on OpenAiIntegrationApiCredential {
               apiKey
             }
+            ... on OzoneIntegrationApiCredential {
+              did
+              handle
+              serviceUrl
+            }
           }
         }
       }
@@ -81,6 +87,13 @@ export function getNewEmptyApiKey(
   switch (name) {
     case 'OPEN_AI': {
       return { __typename: 'OpenAiIntegrationApiCredential', apiKey: '' };
+    }
+    case 'OZONE': {
+      return {
+        __typename: 'OzoneIntegrationApiCredential',
+        did: '',
+        serviceUrl: '',
+      };
     }
     default: {
       throw new Error(`${name} integration not implemented.`);
@@ -170,6 +183,7 @@ export default function IntegrationConfigForm() {
 
   const mappedApiCredential = taggedUnionToOneOfInput(apiCredential, {
     OpenAiIntegrationApiCredential: 'openAi',
+    OzoneIntegrationApiCredential: 'ozone',
   });
 
   const validationMessage = (() => {
@@ -179,6 +193,15 @@ export default function IntegrationConfigForm() {
         .apiKey
     ) {
       return 'Please input the OpenAI API key';
+    }
+    if (
+      'ozone' in mappedApiCredential &&
+      (!(mappedApiCredential['ozone'] as GQLOzoneIntegrationApiCredential)
+        .did ||
+        !(mappedApiCredential['ozone'] as GQLOzoneIntegrationApiCredential)
+          .serviceUrl)
+    ) {
+      return 'Please input the Ozone DID and service URL';
     }
 
     return undefined;
@@ -253,6 +276,8 @@ export default function IntegrationConfigForm() {
     switch (integration) {
       case GQLIntegration.OpenAi:
         return `The ${formattedName} integration requires one API Key.`;
+      case GQLIntegration.Ozone:
+        return `The ${formattedName} integration requires a DID and service URL.`;
       default:
         return undefined;
     }

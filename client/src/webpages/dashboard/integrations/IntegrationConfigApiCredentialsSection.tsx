@@ -4,6 +4,7 @@ import {
   GQLIntegration,
   GQLIntegrationApiCredential,
   GQLOpenAiIntegrationApiCredential,
+  GQLOzoneIntegrationApiCredential,
 } from '../../../graphql/generated';
 
 export default function IntegrationConfigApiCredentialsSection(props: {
@@ -32,10 +33,60 @@ export default function IntegrationConfigApiCredentialsSection(props: {
     );
   };
 
+  const renderOzoneCredential = (
+    apiCredential: GQLOzoneIntegrationApiCredential,
+  ) => {
+    return (
+      <div className="flex flex-col w-1/2 gap-4">
+        <div className="flex flex-col">
+          <div className="mb-1">DID</div>
+          <Input
+            value={apiCredential.did}
+            placeholder="did:plc:..."
+            onChange={(event) =>
+              setApiCredential({
+                ...apiCredential,
+                did: event.target.value,
+              })
+            }
+          />
+        </div>
+        <div className="flex flex-col">
+          <div className="mb-1">Service URL</div>
+          <Input
+            value={apiCredential.serviceUrl}
+            placeholder="https://ozone.example.com"
+            onChange={(event) =>
+              setApiCredential({
+                ...apiCredential,
+                serviceUrl: event.target.value,
+              })
+            }
+          />
+        </div>
+        <div className="flex flex-col">
+          <div className="mb-1">Handle (optional)</div>
+          <Input
+            value={apiCredential.handle ?? ''}
+            placeholder="your-handle.bsky.social"
+            onChange={(event) =>
+              setApiCredential({
+                ...apiCredential,
+                handle: event.target.value || undefined,
+              })
+            }
+          />
+        </div>
+      </div>
+    );
+  };
+
   const projectKeysInput = () => {
     switch (apiCredential.__typename) {
       case 'OpenAiIntegrationApiCredential':
         return renderOpenAiCredential(apiCredential);
+      case 'OzoneIntegrationApiCredential':
+        return renderOzoneCredential(apiCredential);
       default:
         throw new Error('Integration not implemented yet');
     }

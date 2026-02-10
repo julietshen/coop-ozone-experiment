@@ -1,5 +1,5 @@
 import {type ReadonlyDeep} from 'type-fest';
-import {fetchWithTimeout} from './fetch_utils';
+import {fetchWithTimeout} from './fetchUtils.js';
 
 export const GOOGLE_CONTENT_SAFETY_PRIORITIES = [
   'VERY_LOW',

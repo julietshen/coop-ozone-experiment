@@ -117,6 +117,10 @@ import {
   type NcmecService,
 } from '../services/ncmecService/index.js';
 import {
+  makeOzoneService,
+  type OzoneServiceType as OzoneService,
+} from '../services/ozoneService/index.js';
+import {
   fetchHTTP,
   type FetchHTTP,
 } from '../services/networkingService/index.js';
@@ -412,6 +416,7 @@ export interface Dependencies {
   UserManagementService: UserManagementService;
   ModerationConfigService: ModerationConfigService;
   NcmecService: NcmecService;
+  OzoneService: OzoneService;
   PartialItemsService: PartialItemsService;
   UserStrikeService: UserStrikeService;
   AggregationsService: AggregationsService;
@@ -891,6 +896,7 @@ export default async function getBottle() {
   register(bottle, 'ReportingService', makeReportingService);
   register(bottle, 'OrgSettingsService', makeOrgSettingsService);
   register(bottle, 'NcmecService', makeNcmecService);
+  register(bottle, 'OzoneService', makeOzoneService);
   register(bottle, 'ActionPublisher', makeActionPublisher);
   register(bottle, 'PartialItemsService', makePartialItemsService);
   register(bottle, 'UserManagementService', makeUserManagementService);

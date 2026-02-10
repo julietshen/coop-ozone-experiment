@@ -112,6 +112,7 @@ class ActionPublisher {
     private ncmecService: Dependencies['NcmecService'],
     private itemInvestigationService: Dependencies['ItemInvestigationService'],
     private userStrikeService: Dependencies['UserStrikeService'],
+    private ozoneService: Dependencies['OzoneService'],
   ) {}
 
   /**
@@ -530,6 +531,42 @@ class ActionPublisher {
               });
 
               return true;
+            case ActionType.EMIT_OZONE_EVENT:
+              // Extract subject DID from the target item. The item must have
+              // a 'did' field or we derive it from the item ID if it looks
+              // like a DID (starts with 'did:').
+              const subjectDid = (() => {
+                if (isFullSubmission(targetItem)) {
+                  const data = targetItem.data as Record<string, unknown>;
+                  if (typeof data?.did === 'string') return data.did;
+                  if (typeof data?.authorDid === 'string') return data.authorDid;
+                }
+                if (targetItem.itemId.startsWith('did:')) return targetItem.itemId;
+                return targetItem.itemId;
+              })();
+
+              const subjectUri = (() => {
+                if (isFullSubmission(targetItem)) {
+                  const data = targetItem.data as Record<string, unknown>;
+                  if (typeof data?.uri === 'string') return data.uri;
+                  if (typeof data?.atUri === 'string') return data.atUri;
+                }
+                return undefined;
+              })();
+
+              await this.ozoneService.emitEvent({
+                orgId,
+                eventType: action.ozoneEventType,
+                labels: [...(action.ozoneLabels ?? [])],
+                comment: action.ozoneComment,
+                subjectDid,
+                subjectUri,
+                coopActionId: action.id,
+                coopCorrelationId: String(correlationId),
+                policies: policies.map((p) => safePick(p, ['id', 'name'])),
+              });
+
+              return true;
             default:
               assertUnreachable(action);
           }
@@ -552,6 +589,7 @@ export default inject(
     'NcmecService',
     'ItemInvestigationService',
     'UserStrikeService',
+    'OzoneService',
   ],
   ActionPublisher,
 );
