@@ -259,6 +259,8 @@ async function main() {
       text: post.text,
       images: [],
       owner_id: post.author.did,
+      handle: post.author.handle,
+      display_name: post.author.displayName,
       num_likes: Math.floor(Math.random() * 200),
       num_comments: Math.floor(Math.random() * 50),
       num_user_reports: Math.floor(Math.random() * 10) + 1,
